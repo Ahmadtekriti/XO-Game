@@ -30,7 +30,11 @@ import { generateScoreImage, dataURLToBlob } from "./utils/generate-score-image"
 import { fetchLeaderboard, saveLeaderboardEntry, type LeaderboardEntry } from "./lib/supabase"
 
 // Add this import at the top of the file
-import TestInsert from "./components/test-insert"
+// Remove the import for TestInsert at the top of the file:
+// Remove this line:
+// \`\`\`
+// import TestInsert from "./components/test-insert"
+// \`\`\`
 
 // Add the import at the top of the file, with the other imports
 // Remove the import statements for the test components
@@ -728,6 +732,10 @@ export default function TicTacToe() {
     setTimerActive(true)
     // Reset current points display
     setCurrentPoints(0)
+
+    // Start with player's turn in round 1
+    setIsComputerTurn(false)
+
     startNewGame()
   }
 
@@ -755,8 +763,58 @@ export default function TicTacToe() {
     setInChallenge(true)
     setChallengeComplete(false)
 
+    // Start with player's turn in round 1
+    setIsComputerTurn(false)
+
     // Reset game state
     startNewGame()
+  }
+
+  // Add this new function after the resetChallenge function:
+
+  // Clear all game data to start completely fresh
+  const clearAllGameData = () => {
+    // Clear any existing timers
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+
+    // Reset timer and time tracking
+    setElapsedTime(0)
+    setTimerActive(false)
+    setGameStartTime(null)
+    setGameTime(null)
+    setBestTime(null)
+
+    // Reset all score-related states
+    setScores({
+      player1: 0,
+      player2: 0,
+      tie: 0,
+    })
+    setCurrentPoints(0)
+    setFinalScore(0)
+
+    // Reset challenge state
+    setCurrentRound(1)
+    setInChallenge(false)
+    setChallengeComplete(false)
+
+    // Reset game state
+    setBoard(Array(9).fill(null))
+    setCurrentPlayer("X")
+    setIsComputerTurn(false)
+    setGameOver(false)
+    setWinningLine(null)
+    setCountdown(null)
+
+    // Reset popups
+    setShowSharePopup(false)
+    setShowShareButtonPopup(false)
+    setShowChallengeModal(false)
+
+    console.log("All game data cleared. Starting fresh!")
   }
 
   // Update leaderboard with new win
@@ -1113,6 +1171,7 @@ export default function TicTacToe() {
     try {
       console.log("Updating leaderboard with final score:", finalScore)
       console.log("Current game stats - Wins:", scores.player1, "Ties:", scores.tie, "Losses:", scores.player2)
+      console.log("Challenge time in seconds:", elapsedTime)
 
       // Create the entry to save to Supabase with better error handling
       const entryToSave: LeaderboardEntry = {
@@ -1124,14 +1183,21 @@ export default function TicTacToe() {
         mode: "ai",
       }
 
-      // Add time data with multiple field names for compatibility
-      const timeInMs = elapsedTime * 1000 || 0
+      // IMPORTANT: Store time in seconds directly in the 'time' field
+      // This is what will be displayed on the leaderboard
+      entryToSave.time = elapsedTime
+
+      // Also store time in milliseconds for the other time fields for compatibility
+      const timeInMs = elapsedTime * 1000
+      console.log("Saving time in seconds:", elapsedTime, "and milliseconds:", timeInMs)
+
       entryToSave.best_time = timeInMs
       entryToSave.bestTime = timeInMs
       entryToSave.best_score_time = timeInMs
-      // Don't include 'time' field as it doesn't exist in the schema
 
       console.log("Prepared entry to save:", entryToSave)
+      console.log("Time being saved (seconds):", elapsedTime)
+      console.log("Time being saved (formatted):", formatTimer(elapsedTime))
 
       // Save to Supabase
       const savedEntry = await saveLeaderboardEntry(entryToSave)
@@ -1161,7 +1227,8 @@ export default function TicTacToe() {
                     losses: scores.player2,
                     ties: scores.tie,
                     score: finalScore,
-                    best_time: elapsedTime * 1000, // Convert to ms for consistency
+                    best_time: elapsedTime * 1000, // Convert to ms for compatibility
+                    time: elapsedTime, // Store raw seconds
                   }
                 }
                 return entry
@@ -1178,7 +1245,8 @@ export default function TicTacToe() {
           losses: scores.player2,
           ties: scores.tie,
           score: finalScore,
-          best_time: elapsedTime * 1000 || 0, // Ensure we're setting a value even if it's 0
+          best_time: elapsedTime * 1000, // Convert to ms for compatibility
+          time: elapsedTime, // Store raw seconds
           mode: "ai",
         }
         setLeaderboard((prev) => [...prev, newEntry].sort((a, b) => b.score - a.score))
@@ -1273,7 +1341,7 @@ export default function TicTacToe() {
     }
   }
 
-  // Start next round
+  // Update the startNextRound function to alternate who starts each round
   const startNextRound = () => {
     console.log("Starting next round")
     // Clear any existing timers first
@@ -1282,23 +1350,36 @@ export default function TicTacToe() {
       timerRef.current = null
     }
 
+    // Increment round counter
+    setCurrentRound((prev) => prev + 1)
+
+    // Determine who starts based on round number
+    // Player starts on odd rounds (1, 3, 5), AI starts on even rounds (2, 4)
+    const isPlayerStarting = currentRound % 2 === 0 // currentRound is the previous round number
+
     // Reset game state for next round
     setBoard(Array(9).fill(null))
     setCurrentPlayer("X")
-    setIsComputerTurn(false)
+    setIsComputerTurn(!isPlayerStarting && gameMode === "ai")
     setGameOver(false)
     setWinningLine(null)
     setGameStartTime(null)
     setGameTime(null)
 
-    // Increment round counter
-    setCurrentRound((prev) => prev + 1)
-
     // Timer continues running between rounds
-    console.log("Next round setup complete")
+    console.log(`Next round setup complete. ${isPlayerStarting ? "Player" : "AI"} starts.`)
+
+    // If AI starts this round, make its move after a short delay
+    if (!isPlayerStarting && gameMode === "ai") {
+      setTimeout(() => {
+        if (!gameOver) {
+          makeComputerMove()
+        }
+      }, 800) // Slight delay for better UX
+    }
   }
 
-  // Start new game
+  // Update the startNewGame function to respect the current round for who starts
   const startNewGame = () => {
     console.log("Starting new game")
     // Clear any existing timers
@@ -1307,17 +1388,30 @@ export default function TicTacToe() {
       timerRef.current = null
     }
 
+    // Determine who starts based on round number if in challenge mode
+    // Player starts on odd rounds (1, 3, 5), AI starts on even rounds (2, 4)
+    const isPlayerStarting = !inChallenge || currentRound % 2 === 1
+
     // Reset all game state
     setBoard(Array(9).fill(null))
     setCurrentPlayer("X")
-    setIsComputerTurn(false)
+    setIsComputerTurn(!isPlayerStarting && gameMode === "ai")
     setGameOver(false)
     setWinningLine(null)
     setCountdown(null)
     setGameStartTime(null)
     setGameTime(null)
 
-    console.log("New game setup complete")
+    console.log(`New game setup complete. ${isPlayerStarting ? "Player" : "AI"} starts.`)
+
+    // If AI starts this game, make its move after a short delay
+    if (!isPlayerStarting && gameMode === "ai") {
+      setTimeout(() => {
+        if (!gameOver) {
+          makeComputerMove()
+        }
+      }, 800) // Slight delay for better UX
+    }
   }
 
   // Format time in seconds
@@ -2037,7 +2131,6 @@ Remove these sections:
           </div>
         </div>
       )}
-      <TestInsert />
     </div>
   )
 }

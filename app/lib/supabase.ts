@@ -142,7 +142,7 @@ export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   }
 }
 
-// Function to add or update a leaderboard entry with improved error handling
+// Update the saveLeaderboardEntry function to ensure time fields are properly handled
 export async function saveLeaderboardEntry(entry: LeaderboardEntry): Promise<LeaderboardEntry | null> {
   console.log("Attempting to save leaderboard entry:", entry)
 
@@ -169,7 +169,7 @@ export async function saveLeaderboardEntry(entry: LeaderboardEntry): Promise<Lea
 
     // If we couldn't get columns, use these defaults
     if (availableColumns.length === 0) {
-      availableColumns = ["name", "wins", "losses", "ties", "score", "mode", "time"]
+      availableColumns = ["name", "wins", "losses", "ties", "score", "mode", "time", "best_time"]
     }
 
     // Check if the player already exists
@@ -218,25 +218,35 @@ export async function saveLeaderboardEntry(entry: LeaderboardEntry): Promise<Lea
     dataToSave.mode = entry.mode
 
     // Try to find a time column that exists in the schema
+    // Get time value from entry, ensuring it's a number
     const timeValue = entry.best_time || entry.bestTime || entry.time || entry.best_score_time || 0
     console.log("Time value to save:", timeValue, "Type:", typeof timeValue)
 
     // Try each possible time column name
-    const possibleTimeColumns = ["best_time", "bestTime", "best_score_time"]
+    const possibleTimeColumns = ["best_time", "bestTime", "time", "best_score_time"]
     let timeColumnFound = false
+
     for (const columnName of possibleTimeColumns) {
       if (availableColumns.includes(columnName)) {
         console.log(`Using '${columnName}' column for time data:`, timeValue)
-        dataToSave[columnName] = timeValue
+
+        // Make sure we're saving a number, not a string
+        const timeValueNumber = typeof timeValue === "string" ? Number.parseFloat(timeValue) : timeValue
+        dataToSave[columnName] = timeValueNumber
+
         timeColumnFound = true
-        break // Use the first matching column we find
+        // Don't break here - save to all available time columns for redundancy
       }
     }
 
     if (!timeColumnFound) {
       console.log("No time column found in schema. Available columns:", availableColumns)
-      // Don't try to add a time column if none exists
-      console.log("Skipping time data as no appropriate column exists")
+      // Try to add time to a generic column if none exists
+      if (availableColumns.includes("time_seconds")) {
+        dataToSave.time_seconds = typeof entry.time === "number" ? entry.time : 0
+      } else if (availableColumns.includes("time")) {
+        dataToSave.time = typeof entry.time === "number" ? entry.time : 0
+      }
     }
 
     console.log("Data to save:", dataToSave)

@@ -31,23 +31,28 @@ interface AILeaderboardProps {
   onRetry?: () => void
 }
 
-// Update the formatTime function to handle any time field and ensure it works with very small or zero values
+// Update the formatTime function to ensure it properly displays the time in MM:SS format
+// Replace the existing formatTime function with this improved version:
+
 const formatTime = (entry: LeaderboardEntry) => {
   // Try to get time from any available field
   const ms = entry.best_time || entry.bestTime || entry.time || entry.best_score_time || 0
-  console.log(`Formatting time for ${entry.name}: ${ms} ms (type: ${typeof ms})`)
 
-  // If time is missing, zero, or very small, show a default value
-  if (!ms || ms <= 0) {
+  // Log the time value for debugging
+  console.log(`Time for ${entry.name}: ${ms}ms (${typeof ms}), raw time: ${entry.time}s`)
+
+  // If time is missing or zero, show a default value
+  if (!ms && ms !== 0) {
     return "00:00"
   }
 
-  // For very small values that might be stored in seconds instead of milliseconds
-  if (ms < 100) {
-    console.log(`Time value for ${entry.name} is very small (${ms}), might be in seconds already`)
-    const minutes = Math.floor(ms / 60)
-    const seconds = Math.floor(ms % 60)
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+  // Handle time stored in seconds (not milliseconds)
+  // If the value is small (less than 1000) and entry.time exists, it's likely in seconds already
+  if (ms < 1000 && entry.time && entry.time > 0) {
+    const seconds = Math.floor(entry.time)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`
   }
 
   // Normal case - convert milliseconds to minutes:seconds
@@ -112,7 +117,7 @@ export const AILeaderboard: React.FC<AILeaderboardProps> = ({
           {aiEntries.map((entry, index) => (
             <div
               key={index}
-              className={`flex items-center justify-between p-3 rounded ${
+              className={`flex flex-col p-3 rounded ${
                 entry.name === currentPlayerName
                   ? "bg-[#1e2a4a] border border-[#4ecdc4] border-opacity-30"
                   : index === 0
@@ -124,21 +129,22 @@ export const AILeaderboard: React.FC<AILeaderboardProps> = ({
                         : "bg-[#16213e]"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-7 h-7 flex items-center justify-center rounded-full ${
-                    index === 0
-                      ? "bg-yellow-500 text-[#1a1a2e]"
-                      : index === 1
-                        ? "bg-gray-400 text-[#1a1a2e]"
-                        : index === 2
-                          ? "bg-amber-700 text-[#1a1a2e]"
-                          : "bg-[#16213e]"
-                  }`}
-                >
-                  {index === 0 ? <Trophy size={14} /> : <span className="font-bold text-sm">{index + 1}</span>}
-                </div>
-                <div>
+              {/* Top row with rank, name and score */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-7 h-7 flex items-center justify-center rounded-full ${
+                      index === 0
+                        ? "bg-yellow-500 text-[#1a1a2e]"
+                        : index === 1
+                          ? "bg-gray-400 text-[#1a1a2e]"
+                          : index === 2
+                            ? "bg-amber-700 text-[#1a1a2e]"
+                            : "bg-[#16213e]"
+                    }`}
+                  >
+                    {index === 0 ? <Trophy size={14} /> : <span className="font-bold text-sm">{index + 1}</span>}
+                  </div>
                   <div className="font-medium flex items-center gap-1 text-sm">
                     {entry.name}
                     {entry.name === currentPlayerName ? (
@@ -147,19 +153,21 @@ export const AILeaderboard: React.FC<AILeaderboardProps> = ({
                       <Cpu size={12} className="text-[#ff6b6b] opacity-70" />
                     )}
                   </div>
-                  <div className="text-xs text-gray-400">
-                    {t("wins")}: {entry.wins} | {t("ties")}: {entry.ties} | {t("losses")}: {entry.losses}
-                  </div>
                 </div>
-              </div>
-              <div className="text-right">
                 <div className="font-bold text-sm">
                   <span className={entry.score < 0 ? "text-[#ff6b6b]" : "text-[#4ecdc4]"}>{entry.score}</span>{" "}
                   {t("points")}
                 </div>
-                <div className="text-xs text-gray-400 flex items-center justify-end gap-1">
-                  <Clock size={10} />
-                  {formatTime(entry)}
+              </div>
+
+              {/* Bottom row with stats and time */}
+              <div className="flex items-center justify-between mt-1">
+                <div className="text-xs text-gray-400">
+                  {entry.wins}W | {entry.ties}T | {entry.losses}L
+                </div>
+                <div className="flex items-center gap-1 bg-[#1a1a2e] px-2 py-1 rounded text-xs">
+                  <Clock size={10} className="text-[#f7d02c]" />
+                  <span className="font-mono">{formatTime(entry)}</span>
                 </div>
               </div>
             </div>
