@@ -96,20 +96,36 @@ function saveOfflineLeaderboard(entries: LeaderboardEntry[]) {
   }
 }
 
-// Function to fetch all leaderboard entries with improved error handling
+// Update the fetchLeaderboard function to handle connection issues better
 export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   console.log("Fetching leaderboard data...")
 
   try {
+    // Check if Supabase is available by testing the connection
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("Missing Supabase environment variables")
+      return getOfflineLeaderboard()
+    }
+
     // Add a timeout to the fetch operation
-    const fetchPromise = supabase.from("leaderboard").select("*").order("score", { ascending: false })
+    const fetchPromise = new Promise<{ data: LeaderboardEntry[] | null; error: any }>(async (resolve) => {
+      try {
+        const result = await supabase.from("leaderboard").select("*").order("score", { ascending: false })
+        resolve(result)
+      } catch (err) {
+        resolve({ data: null, error: err })
+      }
+    })
 
     const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
       setTimeout(() => reject(new Error("Fetch timeout after 5000ms")), 5000),
     )
 
     // Race between the actual fetch and the timeout
-    const result = await Promise.race([fetchPromise, timeoutPromise])
+    const result = await Promise.race([fetchPromise, timeoutPromise]).catch((error) => {
+      console.error("Fetch error:", error)
+      return { data: null, error }
+    })
 
     const { data, error } = result as any
 

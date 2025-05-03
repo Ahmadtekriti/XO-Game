@@ -63,7 +63,7 @@ const formatTime = (entry: LeaderboardEntry) => {
   return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`
 }
 
-// Update the Leaderboard component to show score and time
+// Update the AILeaderboard component to show score and time
 export const AILeaderboard: React.FC<AILeaderboardProps> = ({
   entries,
   language,
@@ -81,7 +81,7 @@ export const AILeaderboard: React.FC<AILeaderboardProps> = ({
   }
 
   // Filter to only show AI mode entries
-  const aiEntries = entries.filter((entry) => entry.mode === "ai")
+  const aiEntries = Array.isArray(entries) ? entries.filter((entry) => entry.mode === "ai") : []
   console.log("Filtered AI entries:", aiEntries)
 
   // If there's an error, show the error component

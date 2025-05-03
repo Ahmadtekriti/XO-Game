@@ -127,7 +127,11 @@ export default function TicTacToe() {
       setLeaderboardError(null)
 
       try {
-        const data = await fetchLeaderboard()
+        const data = await fetchLeaderboard().catch((error) => {
+          console.error("Error in fetchLeaderboard:", error)
+          throw error
+        })
+
         console.log("Fetched leaderboard data:", data)
 
         // Ensure each entry has a best_time field
@@ -144,7 +148,7 @@ export default function TicTacToe() {
         setLeaderboard(processedData)
       } catch (error) {
         console.error("Error loading leaderboard:", error)
-        setLeaderboardError("Failed to load leaderboard. Please try again later.")
+        setLeaderboardError("Failed to load leaderboard. The game will work offline.")
       } finally {
         setIsLoadingLeaderboard(false)
       }
