@@ -1591,7 +1591,7 @@ export default function TicTacToe() {
   // Main game UI
   return (
     <div
-      className="min-h-screen flex flex-col bg-[#1a1a2e] text-white relative overflow-hidden p-4 pt-16 md:pt-24 justify-center"
+      className="min-h-screen flex flex-col bg-[#1a1a2e] text-white relative overflow-hidden p-2 pt-16 md:p-4 md:pt-24 justify-center"
       dir={languageDirections[language]}
     >
       {/* Remove the test components from the JSX
@@ -1611,15 +1611,15 @@ Remove these sections:
       {/* Larger Share Button in a new position */}
       <button
         onClick={shareChallengeLink}
-        className="fixed top-4 left-4 z-20 bg-[#f7d02c] hover:bg-[#e6c120] text-[#1a1a2e] p-4 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 font-medium"
+        className="fixed top-4 left-4 z-20 bg-[#f7d02c] hover:bg-[#e6c120] text-[#1a1a2e] p-2 md:p-4 rounded-lg shadow-lg transition-all flex items-center justify-center gap-1 md:gap-2 font-medium"
         aria-label={t("share")}
       >
-        <Share2 size={24} />
-        <span>{t("share")}</span>
+        <Share2 size={20} />
+        <span className="hidden xs:inline">{t("share")}</span>
       </button>
 
       {/* Game title */}
-      <h1 className="text-4xl md:text-5xl font-bold mb-8 tracking-wider text-center">{t("game_title")}</h1>
+      <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-8 tracking-wider text-center">{t("game_title")}</h1>
 
       {/* Sound toggle */}
       <button
@@ -1631,13 +1631,12 @@ Remove these sections:
       </button>
 
       {/* Main game area - three column layout */}
-      <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto gap-8 items-start justify-center flex-grow my-4">
+      <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto gap-4 md:gap-8 items-start justify-center flex-grow my-2 md:my-4">
         {/* Scoreboard - left column */}
-        <div className="lg:w-1/4 flex flex-col items-center lg:items-start order-2 lg:order-1">
-          {/* Game mode selection - moved to left column */}
-          <h2 className="text-xl font-semibold mb-3 text-center lg:text-left">{t("game_mode")}</h2>
+        <div className="lg:w-1/4 w-full flex flex-col items-center lg:items-start order-2 lg:order-1">
+          <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-center lg:text-left">{t("game_mode")}</h2>
 
-          <div className="flex flex-col gap-2 mb-6 w-full">
+          <div className="flex flex-col gap-2 mb-4 md:mb-6 w-full">
             <button
               onClick={() => changeGameMode("ai")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -1666,7 +1665,7 @@ Remove these sections:
           {/* Challenge button - changes to Reset Challenge when in challenge mode */}
           <button
             onClick={inChallenge ? resetChallenge : startChallenge}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg mb-6 transition-colors bg-[#f7d02c] text-[#1a1a2e] font-medium hover:bg-[#e6c120]"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-lg mb-4 md:mb-6 transition-colors bg-[#f7d02c] text-[#1a1a2e] font-medium hover:bg-[#e6c120]"
           >
             {inChallenge ? (
               <>
@@ -1824,10 +1823,10 @@ Remove these sections:
         </div>
 
         {/* Game area - middle column */}
-        <div className="lg:w-2/4 flex flex-col items-center order-1 lg:order-2">
+        <div className="lg:w-2/4 w-full flex flex-col items-center order-1 lg:order-2">
           {/* Game status */}
           <div
-            className={`mb-3 text-xl md:text-2xl tracking-wider text-center transition-all duration-300 ${gameOver || challengeComplete ? "font-bold text-2xl md:text-3xl" : "font-light"}`}
+            className={`mb-2 md:mb-3 text-lg md:text-2xl tracking-wider text-center transition-all duration-300 ${gameOver || challengeComplete ? "font-bold text-xl md:text-3xl" : "font-light"}`}
           >
             {getStatusMessage()}
           </div>
@@ -1840,7 +1839,7 @@ Remove these sections:
           )}
 
           {/* Game board */}
-          <div className="w-full max-w-md aspect-square mx-auto">
+          <div className="w-full max-w-sm md:max-w-md aspect-square mx-auto">
             <div className="grid grid-cols-3 gap-2 h-full">
               {board.map((cell, index) => (
                 <div
@@ -1865,8 +1864,8 @@ Remove these sections:
         </div>
 
         {/* AI Leaderboard - right column */}
-        <div className="lg:w-1/4 flex flex-col items-center lg:items-start order-3">
-          <h2 className="text-xl font-semibold mb-3 text-center lg:text-left">AI Challenge Board</h2>
+        <div className="lg:w-1/4 w-full flex flex-col items-center lg:items-start order-3">
+          <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-center lg:text-left">AI Challenge Board</h2>
           <AILeaderboard
             entries={leaderboard}
             language={language}
@@ -1880,8 +1879,8 @@ Remove these sections:
 
       {/* Share Score Popup */}
       {showSharePopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#16213e] rounded-lg p-6 max-w-md w-full animate-fade-in shadow-xl border border-[#ffffff20]">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-2 md:p-4">
+          <div className="bg-[#16213e] rounded-lg p-4 md:p-6 max-w-md w-full animate-fade-in shadow-xl border border-[#ffffff20]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">{t("share_challenge")}</h3>
               <button
@@ -1915,7 +1914,7 @@ Remove these sections:
                 </span>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 text-sm">
+              <div className="grid grid-cols-4 gap-1 md:gap-2 text-xs md:text-sm">
                 <div className="bg-[#16213e] rounded p-2 text-center">
                   <div className="text-[#ff6b6b] font-bold text-xl">{scores.player1}</div>
                   <div className="text-gray-400 text-xs">{t("wins")}</div>
