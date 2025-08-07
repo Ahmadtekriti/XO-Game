@@ -9,7 +9,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.1.15",
     "@next/third-parties": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
@@ -40,7 +39,6 @@
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
     "@supabase/supabase-js": "latest",
-    "ai": "^3.1.26",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
