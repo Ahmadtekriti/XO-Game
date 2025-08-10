@@ -44,6 +44,10 @@ try {
           select: () => Promise.resolve({ data: [], error: null }),
         }),
       }),
+      delete: () => ({
+        // Add delete method for the fallback client
+        eq: () => Promise.resolve({ data: [], error: null }),
+      }),
     }),
   } as any
 }

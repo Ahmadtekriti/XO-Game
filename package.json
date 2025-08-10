@@ -34,6 +34,7 @@
     "@radix-ui/react-slot": "latest",
     "@radix-ui/react-switch": "latest",
     "@radix-ui/react-tabs": "latest",
+    "@radix-ui/react-textarea": "^1.0.3",
     "@radix-ui/react-toast": "latest",
     "@radix-ui/react-toggle": "latest",
     "@radix-ui/react-toggle-group": "latest",
@@ -44,6 +45,7 @@
     "cmdk": "latest",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "latest",
+    "howler": "latest",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
@@ -66,7 +68,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
     "postcss": "^8.5",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }
 }
