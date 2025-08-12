@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@next/third-parties": "latest",
+    "@next/third-parties": "^14.2.3",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
