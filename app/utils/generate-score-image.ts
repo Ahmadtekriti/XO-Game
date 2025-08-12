@@ -1,83 +1,141 @@
-// Function to generate a score image as a data URL
+// Function to generate a shareable score card image
 export const generateScoreImage = async (
   playerName: string,
-  finalScore: number,
+  score: number,
   wins: number,
   ties: number,
   losses: number,
   time: string,
 ): Promise<string> => {
+  // Create a canvas element
   const canvas = document.createElement("canvas")
-  canvas.width = 800
-  canvas.height = 450
   const ctx = canvas.getContext("2d")
 
   if (!ctx) {
-    return "" // Return empty string if canvas context is not available
+    console.error("Canvas context not available")
+    return ""
   }
+
+  // Set canvas dimensions
+  canvas.width = 1200
+  canvas.height = 630
 
   // Background
-  ctx.fillStyle = "#1a1a2e" // Dark background
+  ctx.fillStyle = "#1a1a2e"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  // Grid pattern (subtle)
+  // Add grid pattern background
   ctx.strokeStyle = "rgba(255, 255, 255, 0.05)"
   ctx.lineWidth = 1
-  for (let i = 0; i < canvas.width; i += 20) {
+
+  // Draw vertical lines
+  for (let x = 20; x < canvas.width; x += 20) {
     ctx.beginPath()
-    ctx.moveTo(i, 0)
-    ctx.lineTo(i, canvas.height)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(0, i)
-    ctx.lineTo(canvas.width, i)
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, canvas.height)
     ctx.stroke()
   }
 
-  // Title
-  ctx.font = "bold 48px Arial"
-  ctx.fillStyle = "#f7d02c" // Yellow accent
+  // Draw horizontal lines
+  for (let y = 20; y < canvas.height; y += 20) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(canvas.width, y)
+    ctx.stroke()
+  }
+
+  // Add game title
+  ctx.fillStyle = "white"
+  ctx.font = "bold 60px Arial, sans-serif"
   ctx.textAlign = "center"
-  ctx.fillText("TIC-TAC-TOE CHALLENGE", canvas.width / 2, 80)
+  ctx.fillText("TIC-TAC-TOE CHALLENGE", canvas.width / 2, 100)
 
-  // Player Name
-  ctx.font = "bold 40px Arial"
-  ctx.fillStyle = "#ffffff"
-  ctx.fillText(`${playerName}'s Results`, canvas.width / 2, 150)
+  // Add player name
+  ctx.font = "bold 40px Arial, sans-serif"
+  ctx.fillText(`${playerName}'s Score`, canvas.width / 2, 170)
 
-  // Score
-  ctx.font = "bold 72px Arial"
-  ctx.fillStyle = finalScore >= 0 ? "#4ecdc4" : "#ff6b6b" // Green for positive, red for negative
-  ctx.fillText(`Score: ${finalScore}`, canvas.width / 2, 250)
+  // Add score
+  ctx.font = "bold 120px Arial, sans-serif"
+  ctx.fillStyle = score > 0 ? "#4ecdc4" : "#ff6b6b"
+  ctx.fillText(`${score}`, canvas.width / 2, 320)
+  ctx.fillStyle = "white"
+  ctx.font = "30px Arial, sans-serif"
+  ctx.fillText("POINTS", canvas.width / 2, 370)
 
-  // Stats
-  ctx.font = "30px Arial"
-  ctx.fillStyle = "#ffffff"
-  ctx.fillText(`Wins: ${wins} | Ties: ${ties} | Losses: ${losses}`, canvas.width / 2, 320)
+  // Add stats
+  const statsY = 450
+  const statsSpacing = 200
 
-  // Time
-  ctx.font = "30px Arial"
+  // Wins
+  ctx.fillStyle = "#ff6b6b"
+  ctx.font = "bold 50px Arial, sans-serif"
+  ctx.textAlign = "center"
+  ctx.fillText(`${wins}`, canvas.width / 2 - statsSpacing, statsY)
+  ctx.fillStyle = "white"
+  ctx.font = "25px Arial, sans-serif"
+  ctx.fillText("WINS", canvas.width / 2 - statsSpacing, statsY + 40)
+
+  // Ties
   ctx.fillStyle = "#f7d02c"
-  ctx.fillText(`Time: ${time}`, canvas.width / 2, 370)
+  ctx.font = "bold 50px Arial, sans-serif"
+  ctx.fillText(`${ties}`, canvas.width / 2, statsY)
+  ctx.fillStyle = "white"
+  ctx.font = "25px Arial, sans-serif"
+  ctx.fillText("TIES", canvas.width / 2, statsY + 40)
 
-  // Footer
-  ctx.font = "20px Arial"
-  ctx.fillStyle = "#888888"
-  ctx.fillText("Can you beat this score? Play at xo-game.vercel.app", canvas.width / 2, 420)
+  // Losses
+  ctx.fillStyle = "#4ecdc4"
+  ctx.font = "bold 50px Arial, sans-serif"
+  ctx.fillText(`${losses}`, canvas.width / 2 + statsSpacing, statsY)
+  ctx.fillStyle = "white"
+  ctx.font = "25px Arial, sans-serif"
+  ctx.fillText("LOSSES", canvas.width / 2 + statsSpacing, statsY + 40)
 
+  // Add time
+  ctx.fillStyle = "white"
+  ctx.font = "30px Arial, sans-serif"
+  ctx.fillText(`Time: ${time}`, canvas.width / 2, 540)
+
+  // Add call to action
+  ctx.fillStyle = "rgba(255, 255, 255, 0.7)"
+  ctx.font = "25px Arial, sans-serif"
+  ctx.fillText("Play now and beat this score!", canvas.width / 2, 590)
+
+  // Draw XO symbols
+  // X symbol
+  ctx.strokeStyle = "#ff6b6b"
+  ctx.lineWidth = 10
+  ctx.beginPath()
+  ctx.moveTo(100, 100)
+  ctx.lineTo(200, 200)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(200, 100)
+  ctx.lineTo(100, 200)
+  ctx.stroke()
+
+  // O symbol
+  ctx.strokeStyle = "#4ecdc4"
+  ctx.lineWidth = 10
+  ctx.beginPath()
+  ctx.arc(1050, 150, 60, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Convert canvas to data URL
   return canvas.toDataURL("image/png")
 }
 
 // Function to convert data URL to Blob
-export const dataURLToBlob = (dataurl: string): Blob => {
-  const arr = dataurl.split(",")
-  const mimeMatch = arr[0].match(/:(.*?);/)
-  const mime = mimeMatch ? mimeMatch[1] : "image/png"
+export const dataURLToBlob = (dataURL: string): Blob => {
+  const arr = dataURL.split(",")
+  const mime = arr[0].match(/:(.*?);/)![1]
   const bstr = atob(arr[1])
   let n = bstr.length
   const u8arr = new Uint8Array(n)
+
   while (n--) {
     u8arr[n] = bstr.charCodeAt(n)
   }
+
   return new Blob([u8arr], { type: mime })
 }
